@@ -5,7 +5,7 @@ defmodule KV.Registry do
   Starts the registry
   """
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, :ok, opts)
+    GenServer.start_link(KV.Registry, :ok, opts)
   end
 
   @doc """
@@ -34,7 +34,7 @@ defmodule KV.Registry do
     if Map.has_key?(names, name) do
       {:noreply, {names, refs}}
     else
-      {:ok, bucket} = KV.Bucket.start_link([])
+      {:ok, bucket} = DynamicSupervisor.start_child(KV.BucketSupervisor, KV.Bucket)
       ref = Process.monitor(bucket)
       {:noreply, {Map.put(names, name, bucket), Map.put(refs, ref, name)}}
     end
